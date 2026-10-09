@@ -34,14 +34,22 @@ The implementation follows the architecture and staged plan below, with these ve
 
 Implementation lives in `renderer/fury/` and the libultraship Fury adapter. The existing DX11 HLSL generator is exposed through a portable header and a shared compile guard; it is not yet moved into a separate source file. Fury itself remains unchanged.
 
+### Parity follow-up
+
+- Transformed MSAA copies resolve to private scratch storage before cropping/scaling/flipping; differential GPU tests compare against desktop OpenGL, including destination preservation and nearest-neighbor boundaries.
+- Three receipt-owned submission slots retain upload storage, immutable descriptors, textures and pipelines until actual GPU completion. Explicit readbacks still block. A GPU-gated test proves submission proceeds while earlier work remains pending.
+- Depth reads gather only requested pixels, including MSAA sample zero, instead of copying the entire high-resolution depth image. Per-slot constant and descriptor-set reuse removes repeated allocation/update work.
+- Compatible Prism `.hlsl` overrides use their selected archive source, with explicit template ABI checks and actionable errors. GLSL-only overrides need equivalent HLSL or OpenGL. Real Slang/Vulkan tests qualify 16 default/custom generated variants.
+- Detached SDL/X11 ImGui windows render independently; two-window rendering, 160 detached resize operations, close/recreation and clean exit are exercised. Every present refreshes the complete native surface set. SDL2 Wayland lacks native viewport support, so only docking is available there.
+- At 2560×1440, 1.5× internal resolution and 4× MSAA, isolated stock gameplay reaches both 120 and 240 FPS caps with VSync and validation disabled. These are post-change measurements, not a controlled speedup ratio.
+
 ### Remaining qualification and limits
 
-- The runtime deliberately waits at every flush/present and before retiring changed resources. It is a correctness-first implementation, not an optimized submission path.
-- Custom Prism shader overrides are explicitly unsupported. Detached ImGui platform windows are disabled.
-- MSAA depth reads select sample zero and preserve the interpreter's 14-bit depth quantization. Synthetic values pass, but depth-sensitive gameplay effects still need direct OpenGL comparison.
-- Optional HD texture packs, model packs and custom shader packs are not qualified. Stock-scene coverage is limited; full visual parity is not claimed.
-- Runtime filter/vsync switching, prolonged window resizing/minimize/restore, surface-loss recovery, frame dropping and GUI texture reload still need dedicated live stress tests. A zero-sized presentation is covered headlessly.
-- Only Linux Vulkan/Wayland is runtime-qualified. X11 and Windows native handle plumbing exists but has not been tested; D3D12 and other platforms remain deferred.
+- MSAA depth reads select sample zero. Differential tests tolerate one 14-bit bucket only near quantization boundaries; partial-coverage sample placement and depth-sensitive gameplay effects are not fully qualified.
+- Stock, HD-only, Young Link subset and combined configurations reach Link's house and pause inventory on both backends. Archive loading is confirmed; replacement activation, equipment previews and full animation/effect parity are not conclusively demonstrated.
+- SDL state refresh fixes the reproduced stale-extent resize abort but cannot make a native resize atomic with Vulkan swapchain creation. A narrower creation-time race remains possible in Fury/NRI.
+- Live minimize/restore, runtime filter changes, GUI texture reload, surface loss and frame dropping still need dedicated qualification. Zero-sized presentation and teardown failures have GPU regression coverage.
+- Linux Vulkan/Wayland gameplay and X11 gameplay/windows are exercised. Windows/D3D12, macOS and other platforms remain deferred. See [FURY_RENDERER_QUALIFICATION.md](FURY_RENDERER_QUALIFICATION.md) for evidence and exact limits.
 
 ## Architecture
 
@@ -174,6 +182,6 @@ Then compare real title/file-select/gameplay/pause scenes at identical settings.
 
 - Fury scenes, ECS integration, PBR conversion, ray tracing, new lighting, and post-processing.
 - FrameGraph adoption, asynchronous renderer threads, transfer-queue overlap, draw sorting, and disk pipeline caches.
-- Detached ImGui windows and qualification on D3D12, macOS, mobile, or WebGPU.
+- Qualification on D3D12, macOS, mobile, or WebGPU.
 
 The playable checkpoint is implemented. Continue with targeted parity and lifetime qualification rather than redesigning the interpreter or adopting Fury's scene system.

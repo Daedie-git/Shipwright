@@ -38,21 +38,33 @@ typedef struct {
     ShipFuryRect viewport, scissor;
     uint32_t depth_test, depth_write, decal, alpha;
     uint32_t noise_frame;
-    float noise_scale, prim_depth;
+    float noise_scale, prim_depth, decal_slope;
     uint32_t gui;
     float gui_transform[4];
 } ShipFuryDraw;
+typedef struct {
+    uint64_t submissions, recycling_waits, readback_waits;
+} ShipFuryStats;
 
 SHIP_FURY_EXPORT ShipFury* ship_fury_create(ShipFuryWindow window, uint32_t validation);
 SHIP_FURY_EXPORT const char* ship_fury_error(ShipFury* context);
 SHIP_FURY_EXPORT void ship_fury_destroy(ShipFury* context);
 SHIP_FURY_EXPORT int ship_fury_present(ShipFury* context, uint32_t width, uint32_t height, uint32_t vsync);
-SHIP_FURY_EXPORT int ship_fury_flush(ShipFury* context);
+SHIP_FURY_EXPORT int ship_fury_flush(ShipFury* context); /* Submit and wait (explicit synchronization). */
+SHIP_FURY_EXPORT int ship_fury_submit(ShipFury* context); /* Submit without waiting; retirement is receipt-based. */
+SHIP_FURY_EXPORT int ship_fury_stats(ShipFury* context, ShipFuryStats* stats);
+/* Surface IDs are unique within a context; zero belongs to the main window. */
+SHIP_FURY_EXPORT int ship_fury_register_surface(ShipFury* context, uint32_t surface, ShipFuryWindow window);
+SHIP_FURY_EXPORT int ship_fury_present_surface(ShipFury* context, uint32_t surface, uint32_t framebuffer, uint32_t width, uint32_t height, uint32_t vsync);
+SHIP_FURY_EXPORT int ship_fury_surface_state(ShipFury* context, uint32_t surface, uint32_t width, uint32_t height, uint32_t minimized);
+SHIP_FURY_EXPORT int ship_fury_unregister_surface(ShipFury* context, uint32_t surface);
+SHIP_FURY_EXPORT int ship_fury_delete_framebuffer(ShipFury* context, uint32_t framebuffer);
 SHIP_FURY_EXPORT uint32_t ship_fury_program(ShipFury* context, const char* source, size_t length, const ShipFuryAttribute* attributes, uint32_t count, uint32_t stride);
 SHIP_FURY_EXPORT int ship_fury_clear_programs(ShipFury* context);
 SHIP_FURY_EXPORT uint32_t ship_fury_texture(ShipFury* context);
 SHIP_FURY_EXPORT int ship_fury_upload(ShipFury* context, uint32_t texture, const uint8_t* rgba, uint32_t width, uint32_t height);
 SHIP_FURY_EXPORT int ship_fury_delete_texture(ShipFury* context, uint32_t texture);
+/* Framebuffer IDs UINT32_MAX-2 through UINT32_MAX are private scratch storage. */
 SHIP_FURY_EXPORT int ship_fury_framebuffer(ShipFury* context, uint32_t id, uint32_t width, uint32_t height, uint32_t samples, uint32_t depth);
 SHIP_FURY_EXPORT uint32_t ship_fury_framebuffer_texture(ShipFury* context, uint32_t id);
 SHIP_FURY_EXPORT int ship_fury_clear(ShipFury* context, uint32_t framebuffer, uint32_t color, uint32_t depth, const ShipFuryRect* depth_region);

@@ -26,22 +26,25 @@ to return to the original dependency set. The installed executable needs
 `libfury_renderer` and the Slang compiler library beside it; CMake installs both.
 Shipwright's normal platform runtime dependencies are still required.
 
-Run the headless Vulkan regression test after building:
+Run the GPU regression tests after building (the optional OpenGL comparison uses a hidden window):
 
 ```sh
 ctest --test-dir build-cmake/fury-renderer-clang --output-on-failure
 ```
 
 Set `SHIP_FURY_VALIDATION=1` to enable NRI and Vulkan validation when running the
-game. Use `SHIP_HOME` with a separate directory containing the game archives,
-configuration and an empty `mods` directory for isolated testing.
+game. Leave this variable unset for normal play and performance measurements;
+validation has substantial CPU overhead. Use `SHIP_HOME` with a separate directory
+containing the game archives, configuration and an empty `mods` directory for isolated testing.
 
-This is a playable first pass, not full renderer parity. Linux Wayland gameplay,
-ImGui menus, pause captures, internal resolution scaling and 4x MSAA are exercised.
-GPU submissions wait synchronously; performance optimization remains. Custom Prism
-shader overrides fail explicitly, detached ImGui windows are disabled, and optional
-texture/model packs and other platforms are not qualified yet. See
-[`FURY_RENDERER_PORT.md`](FURY_RENDERER_PORT.md) for scope and remaining checks.
+The backend now submits asynchronously, supports transformed MSAA framebuffer
+copies and compatible Prism HLSL overrides, and renders detached ImGui windows
+when SDL supports them (tested on Linux X11; SDL2 Wayland does not support them).
+Measured stock gameplay reaches a 240 FPS cap at 2560×1440, 1.5× internal resolution
+and 4× MSAA, with VSync and validation disabled. Pack loading has scene-level smoke
+coverage, not complete replacement/parity qualification. See
+[`FURY_RENDERER_QUALIFICATION.md`](FURY_RENDERER_QUALIFICATION.md) for tests and limits,
+and [`FURY_RENDERER_PORT.md`](FURY_RENDERER_PORT.md) for architecture.
 
 ## Windows
 
