@@ -1,5 +1,28 @@
 # Building Ship of Harkinian
 
+## Fury Renderer Dependency
+
+The fork includes Fury as the `fury` submodule. Its renderer dependency is opt-in;
+OpenGL remains the active backend and no Fury rendering adapter is implemented yet.
+
+The dependency build requires CMake 3.30+, Clang with C++26 support, Vulkan development
+files, and Fury's `slang-bin` binary dependency. It builds in a separate CMake project
+to keep Fury's spdlog v2 and compiler settings separate from Shipwright's spdlog v1.
+The Linux build is validated with Clang 22; other platforms are not yet validated.
+
+```sh
+git submodule update --init fury
+git -C fury submodule update --init --recursive thirdparty/NRI
+cmake -S . -B build-cmake -DSOH_ENABLE_FURY=ON \
+    -DFURY_BINARY_DEPS_ROOT=/path/to/fury/.thirdparty-binaries
+cmake --build build-cmake --target soh -j4
+```
+
+`FURY_BINARY_DEPS_ROOT` must contain `slang-bin`; it can also be supplied as an
+environment variable. `FURY_C_COMPILER` and `FURY_CXX_COMPILER` select the dependency's
+Clang executables independently of Shipwright's compiler. Use `SOH_ENABLE_FURY=OFF`
+to return to the original dependency set.
+
 ## Windows
 
 Requires:

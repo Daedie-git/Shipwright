@@ -375,6 +375,12 @@ quiet_target(libultraship "${WARNING_OVERRIDE}")
 target_compile_definitions(libultraship PUBLIC INCLUDE_MPQ_SUPPORT)
 add_subdirectory(soh)
 
+# Dependency preparation only; the existing rendering backend remains unchanged.
+option(SOH_ENABLE_FURY "Build and link the Fury renderer dependency" OFF)
+if(SOH_ENABLE_FURY)
+    include(CMake/Fury.cmake)
+endif()
+
 set_property(TARGET soh PROPERTY APPIMAGE_DESKTOP_FILE_TERMINAL YES)
 set_property(TARGET soh PROPERTY APPIMAGE_DESKTOP_FILE "${CMAKE_SOURCE_DIR}/scripts/linux/appimage/soh.desktop")
 set_property(TARGET soh PROPERTY APPIMAGE_ICON_FILE "${CMAKE_BINARY_DIR}/sohIcon.png")
