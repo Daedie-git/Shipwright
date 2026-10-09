@@ -3,7 +3,7 @@
 #ifdef __cplusplus
 
 #include <thread>
-#include <SDL2/SDL_net.h>
+#include <SDL_net.h>
 #include <nlohmann/json.hpp>
 
 class Network {

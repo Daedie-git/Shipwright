@@ -8,7 +8,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
+#include <iterator>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "TorchExtract.h"
@@ -97,8 +100,31 @@ int main(int argc, char** argv) {
     }
 
     for (const auto& rom : roms) {
+        std::ifstream input(rom, std::ios::binary);
+        if (!input) {
+            fprintf(stderr, "failed to open %s\n", rom.c_str());
+            return 1;
+        }
+        std::vector<uint8_t> data((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
+        if (input.bad() || data.size() < 4 || data.size() % 4 != 0) {
+            fprintf(stderr, "failed to read a valid ROM from %s\n", rom.c_str());
+            return 1;
+        }
+        // Torch expects big-endian data, regardless of the dump's file extension.
+        if (data[0] == 0x37 && data[1] == 0x80 && data[2] == 0x40 && data[3] == 0x12) {
+            for (size_t i = 0; i < data.size(); i += 2) {
+                std::swap(data[i], data[i + 1]);
+            }
+        } else if (data[0] == 0x40 && data[1] == 0x12 && data[2] == 0x37 && data[3] == 0x80) {
+            for (size_t i = 0; i < data.size(); i += 4) {
+                std::reverse(data.begin() + i, data.begin() + i + 4);
+            }
+        } else if (!(data[0] == 0x80 && data[1] == 0x37 && data[2] == 0x12 && data[3] == 0x40)) {
+            fprintf(stderr, "unrecognized ROM byte order in %s\n", rom.c_str());
+            return 1;
+        }
         // A fresh extraction per ROM; torch names the archive from config.yml.
-        const std::string archive = SohTorch::Extract(rom, src, dest, version, nullptr);
+        const std::string archive = SohTorch::Extract(std::move(data), src, dest, version, nullptr);
         if (archive.empty()) {
             fprintf(stderr, "failed to extract %s\n", rom.c_str());
             return 1;

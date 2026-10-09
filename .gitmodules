@@ -6,3 +6,6 @@
 	path = torch
 	url = https://github.com/HarbourMasters/Torch.git
 	branch = main
+[submodule "fury"]
+	path = fury
+	url = https://github.com/Daedie-git/Fury.git
