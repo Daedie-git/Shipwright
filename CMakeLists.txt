@@ -375,8 +375,8 @@ quiet_target(libultraship "${WARNING_OVERRIDE}")
 target_compile_definitions(libultraship PUBLIC INCLUDE_MPQ_SUPPORT)
 add_subdirectory(soh)
 
-# Dependency preparation only; the existing rendering backend remains unchanged.
-option(SOH_ENABLE_FURY "Build and link the Fury renderer dependency" OFF)
+# The original backend remains the default; Fury is selectable when built.
+option(SOH_ENABLE_FURY "Build the optional Fury Vulkan rendering backend" OFF)
 if(SOH_ENABLE_FURY)
     include(CMake/Fury.cmake)
 endif()

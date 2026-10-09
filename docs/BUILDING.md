@@ -1,9 +1,10 @@
 # Building Ship of Harkinian
 
-## Fury Renderer Dependency
+## Fury Vulkan Backend
 
-The fork includes Fury as the `fury` submodule. Its renderer dependency is opt-in;
-OpenGL remains the active backend and no Fury rendering adapter is implemented yet.
+The fork includes Fury as the `fury` submodule and an opt-in Vulkan backend.
+OpenGL remains the default and fallback. Enable Fury at build time, then select
+**Fury Vulkan** in the graphics backend menu and restart the application.
 
 The dependency build requires CMake 3.30+, Clang with C++26 support, Vulkan development
 files, and Fury's `slang-bin` binary dependency. It builds in a separate CMake project
@@ -21,7 +22,26 @@ cmake --build build-cmake --target soh -j4
 `FURY_BINARY_DEPS_ROOT` must contain `slang-bin`; it can also be supplied as an
 environment variable. `FURY_C_COMPILER` and `FURY_CXX_COMPILER` select the dependency's
 Clang executables independently of Shipwright's compiler. Use `SOH_ENABLE_FURY=OFF`
-to return to the original dependency set.
+to return to the original dependency set. The installed executable needs
+`libfury_renderer` and the Slang compiler library beside it; CMake installs both.
+Shipwright's normal platform runtime dependencies are still required.
+
+Run the headless Vulkan regression test after building:
+
+```sh
+ctest --test-dir build-cmake/fury-renderer-clang --output-on-failure
+```
+
+Set `SHIP_FURY_VALIDATION=1` to enable NRI and Vulkan validation when running the
+game. Use `SHIP_HOME` with a separate directory containing the game archives,
+configuration and an empty `mods` directory for isolated testing.
+
+This is a playable first pass, not full renderer parity. Linux Wayland gameplay,
+ImGui menus, pause captures, internal resolution scaling and 4x MSAA are exercised.
+GPU submissions wait synchronously; performance optimization remains. Custom Prism
+shader overrides fail explicitly, detached ImGui windows are disabled, and optional
+texture/model packs and other platforms are not qualified yet. See
+[`FURY_RENDERER_PORT.md`](FURY_RENDERER_PORT.md) for scope and remaining checks.
 
 ## Windows
 

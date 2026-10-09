@@ -39,6 +39,11 @@ if(WIN32)
 endif()
 add_dependencies(fury::renderer ship_fury_renderer)
 target_link_libraries(libultraship PRIVATE fury::renderer)
+target_compile_definitions(libultraship PRIVATE ENABLE_FURY)
+target_include_directories(libultraship PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/renderer/fury")
+if(UNIX AND NOT APPLE)
+    set_property(TARGET soh APPEND PROPERTY INSTALL_RPATH "$ORIGIN")
+endif()
 
 install(CODE "
     execute_process(

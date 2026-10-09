@@ -14,4 +14,5 @@ static const std::map<Fast::WindowBackend, const char*> windowBackendsMap = {
     { Fast::WindowBackend::FAST3D_DXGI_DX11, "DirectX" },
     { Fast::WindowBackend::FAST3D_SDL_OPENGL, "OpenGL" },
     { Fast::WindowBackend::FAST3D_SDL_METAL, "Metal" },
+    { Fast::WindowBackend::FAST3D_SDL_FURY, "Fury Vulkan" },
 };

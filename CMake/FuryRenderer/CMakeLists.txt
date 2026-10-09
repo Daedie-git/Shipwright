@@ -84,7 +84,9 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 add_library(fury_renderer SHARED)
 add_library(fury::renderer ALIAS fury_renderer)
 fury_configure_renderer_core_target(fury_renderer)
+target_compile_definitions(fury_renderer PRIVATE SHIP_FURY_BUILD_RUNTIME)
 target_sources(fury_renderer PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/../../renderer/fury/Runtime.cpp"
     "${FURY_ROOT}/libs/rendering/renderer/src/presentation/SurfaceBackend.cpp"
     "${FURY_ROOT}/libs/rendering/renderer/src/video/VideoDecodeBackendServices.cpp"
     "${FURY_ROOT}/libs/rendering/renderer/src/ShaderCompiler.cpp"
@@ -113,5 +115,11 @@ foreach(_config IN LISTS CMAKE_CONFIGURATION_TYPES)
         ARCHIVE_OUTPUT_DIRECTORY_${_config_upper} "${CMAKE_BINARY_DIR}/lib"
     )
 endforeach()
+include(CTest)
+if(BUILD_TESTING)
+    add_executable(ship_fury_runtime_tests "${CMAKE_CURRENT_LIST_DIR}/../../renderer/fury/RuntimeTests.cpp")
+    target_link_libraries(ship_fury_runtime_tests PRIVATE fury_renderer)
+    add_test(NAME ship_fury_runtime COMMAND ship_fury_runtime_tests)
+endif()
 install(TARGETS fury_renderer LIBRARY DESTINATION . RUNTIME DESTINATION .)
 install(IMPORTED_RUNTIME_ARTIFACTS slang::slang LIBRARY DESTINATION . RUNTIME DESTINATION .)

@@ -1622,6 +1622,8 @@ extern "C" void DeinitOTR() {
     sohFast3dWindow = nullptr;
 
     OTRGlobals::Instance->context = nullptr;
+    // Release native rendering resources before Vulkan/driver static teardown.
+    Ship::Context::DestroyInstance();
 }
 
 #ifdef _WIN32
